@@ -1,0 +1,82 @@
+{% extends "donation/base.html" %}
+
+{% block extra_head %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const latInput = document.getElementById("latitude");
+        const lngInput = document.getElementById("longitude");
+        const statusSpan = document.getElementById("loc-status");
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                latInput.value = pos.coords.latitude;
+                lngInput.value = pos.coords.longitude;
+                statusSpan.textContent = "Location detected ✔";
+            }, function () {
+                statusSpan.textContent = "Unable to get location ❌";
+            }, {enableHighAccuracy: true});
+        } else {
+            statusSpan.textContent = "Geolocation not supported ❌";
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto glass-effect p-6">
+    <h2 class="text-xl font-bold mb-4">Request Blood</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="space-y-3">
+            <div>
+                <label>Patient Name</label>
+                <input name="patient_name"
+                       class="w-full p-2 bg-black border border-gray-700 rounded" required>
+            </div>
+
+            <div>
+                <label>Blood Type</label>
+                <select name="blood_type" class="w-full p-2 bg-black border border-gray-700 rounded">
+                    {% for value, label in blood_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Units Needed</label>
+                <input type="number" name="units" value="1" min="1"
+                       class="w-full p-2 bg-black border border-gray-700 rounded">
+            </div>
+
+            <div>
+                <label>Hospital Name</label>
+                <input name="hospital_name"
+                       class="w-full p-2 bg-black border border-gray-700 rounded" required>
+            </div>
+
+            <div>
+                <label>Hospital / Address</label>
+                <input name="address"
+                       class="w-full p-2 bg-black border border-gray-700 rounded" required>
+            </div>
+
+            <div>
+                <label>Urgency</label>
+                <select name="urgency" class="w-full p-2 bg-black border border-gray-700 rounded">
+                    <option value="CRITICAL">Critical</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                </select>
+            </div>
+
+            <p id="loc-status" class="text-xs text-gray-400">Getting hospital location (using your device)...</p>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+        </div>
+
+        <button class="btn-primary w-full mt-4">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "donation/base.html" %}
+
+{% block extra_head %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initialize Leaflet map
+        var map = L.map('map').setView([13.0072, 76.1025], 11);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19
+        }).addTo(map);
+
+        var userMarker = null;
+
+        // Try to get user location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                var lat = pos.coords.latitude;
+                var lng = pos.coords.longitude;
+
+                userMarker = L.circleMarker([lat, lng], {
+                    radius: 7,
+                    fillColor: "#ffffff",
+                    color: "#b30000",
+                    weight: 2,
+                    fillOpacity: 1
+                }).addTo(map).bindPopup("You are here");
+
+                map.setView([lat, lng], 12);
+            });
+        }
+
+        // Data from Django (JSON → JS objects)
+        const donors = JSON.parse('{{ donors_json|escapejs }}');
+        const requests = JSON.parse('{{ requests_json|escapejs }}');
+
+        // Donor markers (blue-ish)
+        donors.forEach(function (d) {
+            var distanceText = (d.distance === 999999)
+                ? "Distance unknown"
+                : d.distance.toFixed(2) + " km away";
+
+            var donorMarker = L.circleMarker([d.lat, d.lng], {
+                radius: 8,
+                fillColor: "#1e90ff",
+                color: "#ffffff",
+                weight: 1,
+                fillOpacity: 0.9
+            }).addTo(map);
+
+            donorMarker.bindPopup(
+                "<b>Donor: " + d.donor + "</b><br>" +
+                "Blood: " + d.blood_type + " • " + d.units + " units<br>" +
+                distanceText
+            );
+        });
+
+        // Request markers (red)
+        requests.forEach(function (r) {
+            var distanceText = (r.distance === 999999)
+                ? "Distance unknown"
+                : r.distance.toFixed(2) + " km away";
+
+            var reqMarker = L.circleMarker([r.lat, r.lng], {
+                radius: 9,
+                fillColor: "#ff4444",
+                color: "#ffffff",
+                weight: 2,
+                fillOpacity: 0.95
+            }).addTo(map);
+
+            reqMarker.bindPopup(
+                "<b>Request: " + r.patient_name + "</b><br>" +
+                "Blood: " + r.blood_type + " • " + r.units + " units<br>" +
+                "Hospital: " + r.hospital_name + "<br>" +
+                "Urgency: " + r.urgency + "<br>" +
+                distanceText
+            );
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="grid md:grid-cols-3 gap-6 mb-6">
+    <div class="glass-effect p-4">
+        <h3 class="font-bold mb-2">Donate Blood</h3>
+        <p class="text-sm text-gray-300 mb-3">
+            Register yourself as a donor with your live location.
+        </p>
+        <a href="{% url 'donate_blood' %}" class="btn-primary inline-block w-full text-center">
+            Donate Blood
+        </a>
+    </div>
+
+    <div class="glass-effect p-4">
+        <h3 class="font-bold mb-2">Request Blood</h3>
+        <p class="text-sm text-gray-300 mb-3">
+            Create a blood request for a patient in need.
+        </p>
+        <a href="{% url 'request_blood' %}" class="btn-primary inline-block w-full text-center">
+            Request Blood
+        </a>
+    </div>
+
+    <div class="glass-effect p-4">
+        <h3 class="font-bold mb-2">My Profile</h3>
+        <p class="text-sm text-gray-300 mb-3">
+            Update your contact details and preferences.
+        </p>
+        <a href="{% url 'profile' %}" class="btn-primary inline-block w-full text-center">
+            View Profile
+        </a>
+    </div>
+</div>
+
+<div class="glass-effect p-4 mb-6">
+    <h2 class="text-xl font-bold mb-3">Nearby Donors</h2>
+    <div class="text-sm text-gray-300 mb-2">
+        Sorted by distance from your location (if available).
+    </div>
+    <div class="max-h-72 overflow-y-auto space-y-3">
+        {% for d in nearby_donations %}
+        <div class="flex justify-between items-center bg-black/40 px-3 py-2 rounded">
+            <div>
+                <div class="font-semibold">{{ d.donor }}</div>
+                <div class="text-xs text-gray-400">
+                    {{ d.blood_type }} • {{ d.units }} units
+                </div>
+            </div>
+            <div class="text-sm">
+                {% if d.distance == 999999 %}
+                    --
+                {% else %}
+                    {{ d.distance|floatformat:2 }} km
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-gray-400 text-sm">No donors available yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="glass-effect p-4 mb-6">
+    <h2 class="text-xl font-bold mb-3">Live Map</h2>
+    <div class="text-xs text-gray-300 mb-2">
+        <span class="inline-block w-3 h-3 rounded-full mr-1" style="background:#1e90ff;"></span>
+        Donor locations
+        &nbsp;&nbsp;
+        <span class="inline-block w-3 h-3 rounded-full mr-1" style="background:#ff4444;"></span>
+        Blood request locations
+    </div>
+    <div id="map"></div>
+</div>
+
+<!-- Active Requests Summary (count per blood group) -->
+<div class="glass-effect p-4 mb-6">
+    <h2 class="text-xl font-bold mb-3">Active Requests Summary</h2>
+    {% if active_requests_summary %}
+        <div class="grid md:grid-cols-3 gap-3">
+            {% for item in active_requests_summary %}
+            <div class="bg-black/40 px-3 py-2 rounded flex flex-col items-center">
+                <div class="text-lg font-semibold">
+                    {{ item.blood_type }}
+                </div>
+                <div class="text-sm text-gray-300">
+                    {{ item.count }} person(s) requesting
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-gray-400 text-sm">
+            No active blood requests yet.
+        </div>
+    {% endif %}
+</div>
+
+<div class="glass-effect p-4">
+    <h2 class="text-xl font-bold mb-3">Approved Blood Requests</h2>
+    {% if blood_requests %}
+        <div class="space-y-3">
+            {% for r in blood_requests %}
+            <div class="bg-black/40 px-3 py-2 rounded">
+                <div class="font-semibold">
+                    {{ r.patient_name }} needs {{ r.blood_type }}
+                </div>
+                <div class="text-xs text-gray-400">
+                    {{ r.units_needed }} units • {{ r.hospital_name }} • {{ r.urgency }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-gray-400 text-sm">
+            No approved blood requests yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

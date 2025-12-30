@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodLink | Register</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --blood-red-1: #b30000;
+            --blood-red-2: #660000;
+            --black-bg: #0d0d0d;
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        body {
+            background: linear-gradient(135deg, var(--black-bg), #1a1a1a);
+            font-family: "Segoe UI", sans-serif;
+            color: white;
+        }
+        .glass-box {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blood-red-1), var(--blood-red-2));
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-primary:hover {
+            opacity: 0.85;
+        }
+        .input-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            color: white;
+        }
+    </style>
+
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+
+    <div class="glass-box max-w-md w-full p-8">
+        <h2 class="text-3xl font-bold text-center mb-6">Create an Account</h2>
+
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="p-3 rounded text-sm 
+                        {% if message.tags == 'error' %}
+                            bg-red-600/30 border border-red-500
+                        {% else %}
+                            bg-green-600/30 border border-green-500
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label class="block mb-2 text-sm">Username</label>
+            <input type="text" name="username" class="input-box mb-4" placeholder="Enter username" required>
+
+            <label class="block mb-2 text-sm">Email</label>
+            <input type="email" name="email" class="input-box mb-4" placeholder="Enter email" required>
+
+            <label class="block mb-2 text-sm">Password</label>
+            <input type="password" name="password" id="password" class="input-box mb-2" placeholder="Enter password" required>
+
+            <!-- Password Rules Display -->
+            <div class="text-xs text-gray-300 mb-4 space-y-1">
+                <p id="rule1">• Minimum 8 characters</p>
+                <p id="rule2">• One uppercase letter (A–Z)</p>
+                <p id="rule3">• One lowercase letter (a–z)</p>
+                <p id="rule4">• One number (0–9)</p>
+                <p id="rule5">• One special character (!@#$%^&*)</p>
+            </div>
+
+            <label class="block mb-2 text-sm">Confirm Password</label>
+            <input type="password" name="confirm_password" class="input-box mb-6" placeholder="Confirm password" required>
+
+            <button class="btn-primary">Create Account</button>
+
+            <p class="text-center text-sm mt-4">
+                Already have an account?
+                <a href="{% url 'login' %}" class="text-red-400 hover:underline">Login</a>
+            </p>
+        </form>
+    </div>
+
+<script>
+    // Live password strength highlighting
+    const pwd = document.getElementById("password");
+
+    pwd.addEventListener("input", () => {
+        const val = pwd.value;
+
+        document.getElementById("rule1").style.color = val.length >= 8 ? "lightgreen" : "white";
+        document.getElementById("rule2").style.color = /[A-Z]/.test(val) ? "lightgreen" : "white";
+        document.getElementById("rule3").style.color = /[a-z]/.test(val) ? "lightgreen" : "white";
+        document.getElementById("rule4").style.color = /[0-9]/.test(val) ? "lightgreen" : "white";
+        document.getElementById("rule5").style.color = /[!@#$%^&*(),.?":{}|<>]/.test(val) ? "lightgreen" : "white";
+    });
+</script>
+
+</body>
+</html>

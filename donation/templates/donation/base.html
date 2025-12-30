@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BloodLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Global Styles -->
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .glass-effect {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #b30000, #660000);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 10px 18px;
+            color: white;
+            border-radius: 10px;
+        }
+
+        /* Fix invisible input text on dark theme */
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            background-color: #000;
+            color: #fff;
+            border: 1px solid rgba(156,163,175,0.8);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(156,163,175,0.8);
+        }
+
+        #map {
+            height: 450px;
+            border-radius: 12px;
+        }
+
+        .navbar {
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+<!-- Navigation Bar -->
+<header class="navbar w-full fixed top-0 left-0 z-20 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-droplet text-red-600 text-3xl"></i>
+            <span class="font-bold text-2xl">BloodLink</span>
+        </div>
+
+        <div class="flex gap-4 items-center">
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="text-gray-300 hover:text-white">
+                    Dashboard
+                </a>
+                <a href="{% url 'profile' %}" class="text-gray-300 hover:text-white">
+                    Profile
+                </a>
+                <a href="{% url 'logout' %}"
+                   class="btn-secondary">Logout</a>
+
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-secondary">Login</a>
+                <a href="{% url 'register' %}" class="btn-primary">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- Page Content -->
+<div class="pt-28 max-w-7xl mx-auto px-6 pb-12">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

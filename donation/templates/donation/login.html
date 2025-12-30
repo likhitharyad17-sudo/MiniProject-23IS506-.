@@ -1,0 +1,23 @@
+{% extends "donation/base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto glass-effect p-6">
+    <h2 class="text-xl font-bold mb-4">User Login</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="space-y-3">
+            <div>
+                <label>Username</label>
+                <input name="username" class="w-full p-2 bg-black border border-gray-700 rounded" required>
+            </div>
+            <div>
+                <label>Password</label>
+                <input type="password" name="password" class="w-full p-2 bg-black border border-gray-700 rounded" required>
+            </div>
+        </div>
+
+        <button class="btn-primary w-full mt-4">Login</button>
+    </form>
+</div>
+{% endblock %}

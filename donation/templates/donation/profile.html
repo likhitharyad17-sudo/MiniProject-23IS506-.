@@ -1,0 +1,30 @@
+{% extends "donation/base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto glass-effect p-6">
+    <h2 class="text-xl font-bold mb-4">My Profile</h2>
+
+    <p class="mb-2"><b>Username:</b> {{ request.user.username }}</p>
+    <p class="mb-2"><b>Blood Type:</b> {{ profile.blood_type|default:"Not set" }}</p>
+    <p class="mb-2"><b>Donor Status:</b> {{ profile.is_donor|yesno:"Active,Inactive" }}</p>
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <div class="space-y-3">
+            <div>
+                <label>Phone</label>
+                <input name="phone" value="{{ profile.phone }}"
+                       class="w-full p-2 bg-black border border-gray-700 rounded">
+            </div>
+
+            <div>
+                <label>Preferred Radius (km)</label>
+                <input type="number" name="radius_km" value="{{ profile.radius_km }}"
+                       class="w-full p-2 bg-black border border-gray-700 rounded">
+            </div>
+        </div>
+
+        <button class="btn-primary w-full mt-4">Save</button>
+    </form>
+</div>
+{% endblock %}
